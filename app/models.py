@@ -12,7 +12,7 @@ class Student(Base):
     
     student_class = relationship("Classroom",back_populates="students")
 
-class ClassRoom(Base):
+class Classroom(Base):
     __tablename__ = "classrooms"
     id = Column(Integer,primary_key=True)
     name = Column(String,nullable=False)
