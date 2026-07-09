@@ -25,3 +25,6 @@ class ClassRoomResponse(ClassRoomBase):
     id: int
     class Config:
         from_attributes = True
+
+class ClassRoomUpdate(ClassRoomBase):
+    name:str
