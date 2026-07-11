@@ -6,13 +6,19 @@ class StudentBase(BaseModel):
     email: EmailStr
     
 class StudentCreate(StudentBase):
-    pass
+    classroom_id: int
 
 class StudentResponse(StudentBase):
     id: int 
     classroom_id: int
     class Config:
         from_attributes = True
+
+class StudentUpdate(BaseModel):
+    name: str | None = None
+    age: int | None = None
+    email: str | None = None
+    classroom_id: int | None = None
 
 
 class ClassRoomBase(BaseModel):
@@ -27,4 +33,4 @@ class ClassRoomResponse(ClassRoomBase):
         from_attributes = True
 
 class ClassRoomUpdate(ClassRoomBase):
-    name:str
+    pass
