@@ -10,11 +10,11 @@ class Student(Base):
     email = Column(String,nullable=True,unique=True)
     classroom_id = Column(Integer,ForeignKey("classrooms.id"))
     
-    student_class = relationship("Classroom",back_populates="students")
+    classroom = relationship("Classroom",back_populates="students")
 
 class Classroom(Base):
     __tablename__ = "classrooms"
     id = Column(Integer,primary_key=True)
     name = Column(String,nullable=False)
 
-    students = relationship("Student",back_populates="student_class")
+    students = relationship("Student",back_populates="classroom")

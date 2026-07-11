@@ -8,9 +8,15 @@ class StudentBase(BaseModel):
 class StudentCreate(StudentBase):
     classroom_id: int
 
-class StudentResponse(StudentBase):
+class StudentSimpleResponse(StudentBase):
     id: int 
     classroom_id: int
+    class Config:
+        from_attributes = True
+
+class StudentResponse(StudentBase):
+    id: int
+    classroom: "ClassRoomSimpleResponse"
     class Config:
         from_attributes = True
 
@@ -27,10 +33,20 @@ class ClassRoomBase(BaseModel):
 class ClassRoomCreate(ClassRoomBase):
     pass
 
-class ClassRoomResponse(ClassRoomBase):
+class ClassRoomSimpleResponse(ClassRoomBase):
     id: int
+
+    class Config:
+        from_attributes = True
+
+class ClassRoomResponse(ClassRoomBase):
+    id:int 
+    students: list[StudentSimpleResponse] = []
     class Config:
         from_attributes = True
 
 class ClassRoomUpdate(ClassRoomBase):
     pass
+
+StudentResponse.model_rebuild()
+ClassRoomResponse.model_rebuild()
