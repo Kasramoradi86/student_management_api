@@ -2,6 +2,7 @@ from fastapi import APIRouter,Depends,status,HTTPException
 from sqlalchemy.orm import Session
 from .. import schemas,crud
 from ..dependencies import get_db
+from ..exceptions import StudentNotFoundException
 
 router = APIRouter(prefix="/students",tags=["Students"])
 
@@ -21,7 +22,7 @@ def get_all_students(name: str | None = None ,age: int | None = None,classroom_i
 def get_student_by_id(student_id:int, db:Session = Depends(get_db)):
     student = crud.get_student_by_id(student_id=student_id,db=db)
     if student is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Student not found")
+        raise StudentNotFoundException(student_id)
     else:
         return student
     
@@ -29,7 +30,7 @@ def get_student_by_id(student_id:int, db:Session = Depends(get_db)):
 def update_student(student_id:int,student:schemas.StudentUpdate,db:Session = Depends(get_db)):
     update_student = crud.update_student(student_id=student_id,student_data=student,db=db)
     if update_student is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        raise StudentNotFoundException(student_id)
     else:
         return update_student
     
@@ -37,6 +38,6 @@ def update_student(student_id:int,student:schemas.StudentUpdate,db:Session = Dep
 def delete_student(student_id:int,db:Session = Depends(get_db)):
     student_deleted = crud.delete_student(student_id=student_id,db=db)
     if student_deleted is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Student not found")
+        raise StudentNotFoundException(student_id)
     else:
         return {"massage":"Student deleted successfully"}
