@@ -10,8 +10,8 @@ def create_student(student: schemas.StudentCreate,db:Session = Depends(get_db)):
     return crud.create_student(db=db,student=student)
 
 @router.get("/",response_model=list[schemas.StudentSimpleResponse],status_code=status.HTTP_200_OK)
-def get_all_students(db:Session = Depends(get_db)):
-    return crud.get_all_students(db=db)
+def get_all_students(name: str | None = None ,age: int | None = None,classroom_id: int | None = None,db:Session = Depends(get_db)):
+    return crud.get_all_students(db=db,name=name,age=age,classroom_id=classroom_id)
 
 @router.get("/{student_id}",response_model=schemas.StudentResponse,status_code=status.HTTP_200_OK)
 def get_student_by_id(student_id:int, db:Session = Depends(get_db)):
