@@ -49,7 +49,9 @@ def get_all_students(db:Session,
                      age: int | None = None,
                      classroom_id: int | None = None,
                      skip: int = 0,
-                     limit: int = 10):
+                     limit: int = 10,
+                     sort_by: str = "id",
+                     order: str = "asc"):
     query = db.query(models.Student)
     if name:
         query = query.filter(models.Student.name.ilike(f"%{name}%"))
@@ -57,6 +59,20 @@ def get_all_students(db:Session,
         query = query.filter(models.Student.age == age)
     if classroom_id is not None:
         query = query.filter(models.Student.classroom_id == classroom_id)
+    
+    allowed_sort_fields = {
+        "id": models.Student.id,
+        "name":models.Student.name,
+        "age": models.Student.age,
+        "email": models.Student.email
+    }
+    sort_column = allowed_sort_fields.get(sort_by)
+    if sort_column is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Invalid sort field")
+    if order.lower() == "desc":
+        query = query.order_by(sort_column.desc())
+    else:
+        query = query.order_by(sort_column.asc())
     query = query.offset(skip)
     query = query.limit(limit)
     return query.all()
