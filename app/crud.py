@@ -47,7 +47,9 @@ def create_student(db:Session,student:schemas.StudentCreate):
 def get_all_students(db:Session,
                      name: str | None = None,
                      age: int | None = None,
-                     classroom_id: int | None = None):
+                     classroom_id: int | None = None,
+                     skip: int = 0,
+                     limit: int = 10):
     query = db.query(models.Student)
     if name:
         query = query.filter(models.Student.name.ilike(f"%{name}%"))
@@ -55,6 +57,8 @@ def get_all_students(db:Session,
         query = query.filter(models.Student.age == age)
     if classroom_id is not None:
         query = query.filter(models.Student.classroom_id == classroom_id)
+    query = query.offset(skip)
+    query = query.limit(limit)
     return query.all()
 
 def get_student_by_id(student_id:int,db:Session):
