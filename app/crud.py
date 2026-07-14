@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from fastapi import HTTPException,status
 from . import schemas,models
 
 def create_classroom(db: Session,classroom: schemas.ClassRoomCreate):
@@ -34,6 +35,9 @@ def delete_classroom(db:Session,classroom_id:int):
         return None
     
 def create_student(db:Session,student:schemas.StudentCreate):
+    classroom = db.query(models.Classroom).filter(models.Classroom.id == student.classroom_id).first()
+    if classroom is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Classroom not found")
     db_student = models.Student(name=student.name,age=student.age,email=student.email,classroom_id=student.classroom_id)
     db.add(db_student)
     db.commit()
@@ -47,6 +51,10 @@ def get_student_by_id(student_id:int,db:Session):
     return db.query(models.Student).filter_by(id=student_id).first()
 
 def update_student(student_id:int,student_data:schemas.StudentUpdate,db:Session):
+    if student_data.classroom_id is not None:
+        classroom = db.query(models.Classroom).filter(models.Classroom.id == student_data.classroom_id).first()
+        if classroom is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Classroom not found")
     db_student = get_student_by_id(student_id=student_id,db=db)
     if db_student is not None:
         update_data = student_data.model_dump(exclude_unset=True)
