@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException,status
 from . import schemas,models
-from .exceptions import ClassRoomNotFoundException
+from .exceptions import ClassRoomNotFoundException,StudentNotFoundException,ClassRoomHasStudentException,StudentAlreadyInClassroomException
 
 def create_classroom(db: Session,classroom: schemas.ClassRoomCreate):
     db_classroom = models.Classroom(name=classroom.name)
@@ -29,11 +29,14 @@ def update_classroom(db:Session,classroom_id:int,classroom_data:schemas.ClassRoo
 def delete_classroom(db:Session,classroom_id:int):
     classroom = get_classroom_by_id(db=db,id=classroom_id)
     if classroom is not None:
-        db.delete(classroom)
-        db.commit()
-        return classroom
+        if not classroom.students:
+            db.delete(classroom)
+            db.commit()
+            return classroom
+        raise ClassRoomHasStudentException(classroom_id)
+    
     else:
-        return None
+        raise ClassRoomNotFoundException(classroom_id)
     
 def create_student(db:Session,student:schemas.StudentCreate):
     classroom = db.query(models.Classroom).filter(models.Classroom.id == student.classroom_id).first()
@@ -79,23 +82,27 @@ def get_all_students(db:Session,
     return query.all()
 
 def get_student_by_id(student_id:int,db:Session):
-    return db.query(models.Student).filter_by(id=student_id).first()
+    student = db.query(models.Student).filter(models.Student.id == student_id).first()
+    if student is None:
+        raise StudentNotFoundException(student_id)
+    return student
 
 def update_student(student_id:int,student_data:schemas.StudentUpdate,db:Session):
+    db_student = get_student_by_id(student_id=student_id,db=db)
+    if db_student is None:
+        raise StudentNotFoundException(student_id)
     if student_data.classroom_id is not None:
-        classroom = db.query(models.Classroom).filter(models.Classroom.id == student_data.classroom_id).first()
+        classroom = get_classroom_by_id(id=student_data.classroom_id,db=db)
         if classroom is None:
             raise ClassRoomNotFoundException(student_data.classroom_id)
-    db_student = get_student_by_id(student_id=student_id,db=db)
-    if db_student is not None:
-        update_data = student_data.model_dump(exclude_unset=True)
-        for key,value in update_data.items():
-            setattr(db_student,key,value)
-        db.commit()
-        db.refresh(db_student)
-        return db_student
-    else:
-        return None
+        if db_student.classroom_id == classroom.id:
+            raise StudentAlreadyInClassroomException(student_id=student_id , classroom_id=classroom.id)
+    update_data = student_data.model_dump(exclude_unset=True)
+    for key,value in update_data.items():
+        setattr(db_student,key,value)
+    db.commit()
+    db.refresh()
+    return db_student
     
 def delete_student(student_id:int,db:Session):
     student = get_student_by_id(student_id=student_id,db=db)

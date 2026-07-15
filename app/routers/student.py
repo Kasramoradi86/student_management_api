@@ -1,4 +1,4 @@
-from fastapi import APIRouter,Depends,status,HTTPException
+from fastapi import APIRouter,Depends,status
 from sqlalchemy.orm import Session
 from .. import schemas,crud
 from ..dependencies import get_db
@@ -20,19 +20,11 @@ def get_all_students(name: str | None = None ,age: int | None = None,classroom_i
 
 @router.get("/{student_id}",response_model=schemas.StudentResponse,status_code=status.HTTP_200_OK)
 def get_student_by_id(student_id:int, db:Session = Depends(get_db)):
-    student = crud.get_student_by_id(student_id=student_id,db=db)
-    if student is None:
-        raise StudentNotFoundException(student_id)
-    else:
-        return student
+    return crud.get_student_by_id(student_id=student_id,db=db)
     
 @router.put("/{student_id}",response_model=schemas.StudentSimpleResponse,status_code=status.HTTP_200_OK)
 def update_student(student_id:int,student:schemas.StudentUpdate,db:Session = Depends(get_db)):
-    update_student = crud.update_student(student_id=student_id,student_data=student,db=db)
-    if update_student is None:
-        raise StudentNotFoundException(student_id)
-    else:
-        return update_student
+    return crud.update_student(student_id=student_id,student_data=student,db=db)
     
 @router.delete("/{student_id}",status_code=status.HTTP_200_OK)
 def delete_student(student_id:int,db:Session = Depends(get_db)):
